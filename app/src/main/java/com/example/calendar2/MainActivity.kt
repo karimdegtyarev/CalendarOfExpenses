@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         binding.apply {
             addExpenses.setOnClickListener {
                 if (selectedDateMillis == 0L) {
-                    showToast("Сначала выберите дату на календаре")
+                    showToast("Сначала выберите дату на календаре:)")
                 } else {
                     showAddEventDialog()
                 }
