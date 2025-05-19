@@ -2,25 +2,17 @@ package com.example.calendar2
 
 import android.Manifest
 import android.annotation.SuppressLint
-import com.google.gson.Gson
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.content.ContentValues
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.provider.CalendarContract
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.RecyclerView
 import com.example.calendar2.databinding.ActivityMainBinding
-import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -29,8 +21,6 @@ class MainActivity : AppCompatActivity() {
     private val requestcode = 100
     private var selectedDateMillis: Long = 0L
     private val sharedPref by lazy { getSharedPreferences("FinancePrefs", MODE_PRIVATE) }
-    private val subscriptions = mutableListOf<Subscription>()
-    private val gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,16 +28,118 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         checkAndRequestPermissions()
-        loadSubscriptions()
-
+        clearCalendarOnce()
         setupViews()
     }
 
+    private fun showLimitDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_set_limits, null)
+
+        val editMin = dialogView.findViewById<EditText>(R.id.limit_min)
+        val editAvg = dialogView.findViewById<EditText>(R.id.limit_avg)
+        val editMax = dialogView.findViewById<EditText>(R.id.limit_max)
+        val editTotal = dialogView.findViewById<EditText>(R.id.limit_total)
+
+        editMin.setText(sharedPref.getFloat("limit_min", 400f).toString())
+        editAvg.setText(sharedPref.getFloat("limit_avg", 500f).toString())
+        editMax.setText(sharedPref.getFloat("limit_max", 700f).toString())
+        editTotal.setText(sharedPref.getFloat("limit_total", 0f).toString())
+
+        AlertDialog.Builder(this)
+            .setTitle("Установить лимиты")
+            .setView(dialogView)
+            .setPositiveButton("Сохранить") { _, _ ->
+                val min = editMin.text.toString().toFloatOrNull() ?: 400f
+                val avg = editAvg.text.toString().toFloatOrNull() ?: 500f
+                val max = editMax.text.toString().toFloatOrNull() ?: 700f
+                val total = editTotal.text.toString().toFloatOrNull() ?: 0f
+
+                with(sharedPref.edit()) {
+                    putFloat("limit_min", min)
+                    putFloat("limit_avg", avg)
+                    putFloat("limit_max", max)
+                    putFloat("limit_total", total)
+                    apply()
+                }
+
+                showToast("Лимиты сохранены")
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun showAddEventDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_add_expenses, null)
+
+        val radio1 = dialogView.findViewById<RadioButton>(R.id.radio_choice1)
+        val radio2 = dialogView.findViewById<RadioButton>(R.id.radio_choice2)
+        val radio3 = dialogView.findViewById<RadioButton>(R.id.radio_choice3)
+
+        val editTransport = dialogView.findViewById<EditText>(R.id.edit_transport)
+        val editShop = dialogView.findViewById<EditText>(R.id.edit_shop)
+        val editEntertainment = dialogView.findViewById<EditText>(R.id.edit_entertainment)
+        val editOther = dialogView.findViewById<EditText>(R.id.edit_other)
+
+        val min = sharedPref.getFloat("limit_min", 400f).toInt()
+        val avg = sharedPref.getFloat("limit_avg", 500f).toInt()
+        val max = sharedPref.getFloat("limit_max", 700f).toInt()
+
+        radio1.text = min.toString()
+        radio2.text = avg.toString()
+        radio3.text = max.toString()
+
+        var lastChecked: RadioButton? = null
+
+        val assignToggle = { button: RadioButton ->
+            button.setOnClickListener {
+                if (lastChecked == button) {
+                    button.isChecked = false
+                    lastChecked = null
+                } else {
+                    lastChecked?.isChecked = false
+                    button.isChecked = true
+                    lastChecked = button
+                }
+            }
+        }
+
+        assignToggle(radio1)
+        assignToggle(radio2)
+        assignToggle(radio3)
+
+        AlertDialog.Builder(this)
+            .setTitle("Добавить событие")
+            .setView(dialogView)
+            .setPositiveButton("Добавить") { _, _ ->
+                val radioAmount = lastChecked?.text?.toString()?.toDoubleOrNull() ?: 0.0
+                val transport = editTransport.text.toString().toDoubleOrNull() ?: 0.0
+                val shop = editShop.text.toString().toDoubleOrNull() ?: 0.0
+                val entertainment = editEntertainment.text.toString().toDoubleOrNull() ?: 0.0
+                val other = editOther.text.toString().toDoubleOrNull() ?: 0.0
+
+                val description = buildString {
+                    if (radioAmount > 0) append("Обед: $radioAmount₽\n")
+                    if (transport > 0) append("Транспорт: $transport₽\n")
+                    if (shop > 0) append("Магазин: $shop₽\n")
+                    if (entertainment > 0) append("Развлечения: $entertainment₽\n")
+                    if (other > 0) append("Другое: $other₽")
+                }
+
+                val total = radioAmount + transport + shop + entertainment + other
+                addEventToCalendar("Расходы", description, total)
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupViews() {
         binding.apply {
+            setLimitButton.setOnClickListener { showLimitDialog() }
+
             addExpenses.setOnClickListener {
                 if (selectedDateMillis == 0L) {
-                    showToast("Сначала выберите дату на календаре:)")
+                    showToast("Сначала выберите дату на календаре :)")
                 } else {
                     showAddEventDialog()
                 }
@@ -60,225 +152,80 @@ class MainActivity : AppCompatActivity() {
                 updateFinancialStatus()
             }
 
-            balanceButton.setOnClickListener {
-                showBalanceScreen()
+            calendarView.setOnTouchListener { _, _ ->
+                if (selectedDateMillis != 0L) {
+                    updateFinancialStatus()
+                }
+                false
             }
 
-            subscriptionsButton.setOnClickListener {
-                showSubscriptionsDialog()
+            balanceButton.setOnClickListener {
+                showBalanceScreen()
             }
         }
     }
 
-    private fun showAddEventDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_add_expenses, null)
+    private fun clearCalendarOnce() {
+        if (sharedPref.getBoolean("calendar_cleared", false)) return
 
-        val radioGroup = dialogView.findViewById<RadioGroup>(R.id.radioGroup)
-        val editTransport = dialogView.findViewById<EditText>(R.id.edit_transport)
-        val editShop = dialogView.findViewById<EditText>(R.id.edit_shop)
-        val editEntertainment = dialogView.findViewById<EditText>(R.id.edit_entertainment)
-        val editOther = dialogView.findViewById<EditText>(R.id.edit_other)
+        val selection = "${CalendarContract.Events.DESCRIPTION} LIKE ?"
+        val selectionArgs = arrayOf("%Обед:%") // Твои события с подписями
 
-        AlertDialog.Builder(this)
-            .setTitle("Добавить событие")
-            .setView(dialogView)
-            .setPositiveButton("Добавить") { _, _ ->
-                val selectedRadioId = radioGroup.checkedRadioButtonId
-                val radioText = dialogView.findViewById<RadioButton>(selectedRadioId)?.text ?: "Не выбран"
+        contentResolver.delete(CalendarContract.Events.CONTENT_URI, selection, selectionArgs)
 
-                val transportAmount = editTransport.text.toString().toDoubleOrNull() ?: 0.0
-                val shopAmount = editShop.text.toString().toDoubleOrNull() ?: 0.0
-                val entertainmentAmount = editEntertainment.text.toString().toDoubleOrNull() ?: 0.0
-                val otherAmount = editOther.text.toString().toDoubleOrNull() ?: 0.0
-
-                val totalAmount = transportAmount + shopAmount + entertainmentAmount + otherAmount
-
-                val description = buildString {
-                    append("Обед: $radioText (${radioText.toString().substringAfterLast(" ")})\n")
-                    append("Транспорт: $transportAmount₽\n")
-                    append("Магазин: $shopAmount₽\n")
-                    append("Развлечения: $entertainmentAmount₽\n")
-                    append("Другое: $otherAmount₽\n")
-                    append("Итого: $totalAmount₽")
-                }
-
-                deleteEventsForDate(selectedDateMillis)
-                addEventToCalendar("Расходы", description)
-            }
-            .setNegativeButton("Отмена", null)
-            .show()
+        sharedPref.edit().putBoolean("calendar_cleared", true).apply()
+        showToast("Старые события очищены")
     }
 
     private fun updateFinancialStatus() {
         val events = loadEventsForDate(selectedDateMillis)
-        val dailyExpenses = calculateDailyExpenses(events)
-        val monthlyExpenses = calculateMonthlyExpenses(selectedDateMillis)
-        val totalExpenses = dailyExpenses + monthlyExpenses
-        val currentBalance = getCurrentBalance()
-        val projectedBalance = currentBalance - totalExpenses
+        val daily = events.sumOf { it.amount }
+        val monthTotal = calculateTotalFromMonthStart(selectedDateMillis)
+        val balance = getCurrentBalance()
+        val remaining = balance - monthTotal
 
-        binding.financialStatus.text = buildString {
-            append("Траты за день: ${"%.2f".format(dailyExpenses)}₽\n")
-            append("Подписки: ${"%.2f".format(monthlyExpenses)}₽\n")
-            append("Итого расходов: ${"%.2f".format(totalExpenses)}₽\n")
-            append("Текущий баланс: ${"%.2f".format(currentBalance)}₽\n")
-            append("Прогноз на конец дня: ${"%.2f".format(projectedBalance)}₽")
+        binding.financialStatus.text = "Траты за день: %.2f₽\nОстаток: %.2f₽".format(daily, remaining)
+        binding.eventsTextView.text = if (events.isNotEmpty())
+            events.joinToString("\n") { it.description }
+        else
+            "Событий на выбранную дату нет."
+    }
+
+    private fun calculateTotalFromMonthStart(dateMillis: Long): Double {
+        val cal = Calendar.getInstance().apply { timeInMillis = dateMillis }
+        val day = cal.get(Calendar.DAY_OF_MONTH)
+        var total = 0.0
+        for (d in 1..day) {
+            cal.set(Calendar.DAY_OF_MONTH, d)
+            total += loadEventsForDate(cal.timeInMillis).sumOf { it.amount }
         }
-
-        // Обновляем отображение событий
-        if (events.isNotEmpty()) {
-            binding.eventsTextView.text = events.joinToString("\n\n") {
-                "${it.title}\n${it.description}"
-            }
-        } else {
-            binding.eventsTextView.text = "Событий на выбранную дату нет."
-        }
-    }
-
-    private fun showBalanceScreen() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_balance, null)
-        val currentBalance = getCurrentBalance()
-        val editBalance = dialogView.findViewById<EditText>(R.id.edit_balance).apply {
-            setText(currentBalance.toString())
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Управление балансом")
-            .setView(dialogView)
-            .setPositiveButton("Сохранить") { _, _ ->
-                val newBalance = editBalance.text.toString().toDoubleOrNull() ?: 0.0
-                saveCurrentBalance(newBalance)
-                updateFinancialStatus()
-            }
-            .setNegativeButton("Отмена", null)
-            .show()
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    private fun showSubscriptionsDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_subscriptions, null)
-        val subscriptionsList = dialogView.findViewById<RecyclerView>(R.id.subscriptions_list)
-        val editName = dialogView.findViewById<EditText>(R.id.edit_subscription_name)
-        val editAmount = dialogView.findViewById<EditText>(R.id.edit_subscription_amount)
-        val addButton = dialogView.findViewById<Button>(R.id.add_subscription_button)
-
-        val adapter = SubscriptionsAdapter(subscriptions) { subscription ->
-            subscriptions.remove(subscription)
-            saveSubscriptions()
-
-        }
-
-        adapter.notifyDataSetChanged()
-
-        subscriptionsList.layoutManager = LinearLayoutManager(this)
-        subscriptionsList.adapter = adapter
-
-        addButton.setOnClickListener {
-            val name = editName.text.toString()
-            val amount = editAmount.text.toString().toDoubleOrNull() ?: 0.0
-
-            if (name.isNotBlank() && amount > 0) {
-                subscriptions.add(Subscription(name, amount))
-                saveSubscriptions()
-                adapter.notifyDataSetChanged()
-                editName.text.clear()
-                editAmount.text.clear()
-            } else {
-                showToast("Введите название и сумму подписки")
-            }
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Управление подписками")
-            .setView(dialogView)
-            .setPositiveButton("Готово") { _, _ ->
-                updateFinancialStatus()
-            }
-            .show()
-    }
-
-    private fun calculateDailyExpenses(events: List<Event>): Double {
-        return events.sumOf { it.amount }
-    }
-
-    private fun calculateMonthlyExpenses(dateMillis: Long): Double {
-        val calendar = Calendar.getInstance().apply { timeInMillis = dateMillis }
-        val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
-        val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-
-        return subscriptions.sumOf { subscription ->
-            subscription.amount * dayOfMonth / daysInMonth
-        }
-    }
-
-    private fun getCurrentBalance(): Double {
-        return sharedPref.getFloat("current_balance", 0f).toDouble()
-    }
-
-    private fun saveCurrentBalance(balance: Double) {
-        sharedPref.edit().putFloat("current_balance", balance.toFloat()).apply()
-    }
-
-    private fun loadSubscriptions() {
-        val json = sharedPref.getString("subscriptions", "[]") ?: "[]"
-        val type = object : TypeToken<List<Subscription>>() {}.type
-        subscriptions.addAll(gson.fromJson(json, type))
-    }
-
-    private fun saveSubscriptions() {
-        val json = Gson().toJson(subscriptions)
-        sharedPref.edit().putString("subscriptions", json).apply()
-    }
-
-    private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
-    private fun checkAndRequestPermissions() {
-        val permissionsNeeded = mutableListOf<String>()
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            permissionsNeeded.add(Manifest.permission.WRITE_CALENDAR)
-        }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            permissionsNeeded.add(Manifest.permission.READ_CALENDAR)
-        }
-        if (permissionsNeeded.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, permissionsNeeded.toTypedArray(), requestcode)
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == requestcode && grantResults.any { it != PackageManager.PERMISSION_GRANTED }) {
-            Toast.makeText(this, "Нужны разрешения для работы с календарем", Toast.LENGTH_SHORT).show()
-        }
+        return total
     }
 
     @SuppressLint("Range")
-    private fun loadEventsForDate(dateMillis: Long): List<Event> {
-        val events = mutableListOf<Event>()
+    private fun loadEventsForDate(dateMillis: Long): List<ExpenseEvent> {
+        val events = mutableListOf<ExpenseEvent>()
         val start = Calendar.getInstance().apply {
             timeInMillis = dateMillis
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
-        }
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
         val end = Calendar.getInstance().apply {
             timeInMillis = dateMillis
             set(Calendar.HOUR_OF_DAY, 23)
             set(Calendar.MINUTE, 59)
             set(Calendar.SECOND, 59)
-        }
+            set(Calendar.MILLISECOND, 999)
+        }.timeInMillis
 
-        val projection = arrayOf(
-            CalendarContract.Events.TITLE,
-            CalendarContract.Events.DESCRIPTION
-        )
         val selection = "${CalendarContract.Events.DTSTART} >= ? AND ${CalendarContract.Events.DTSTART} <= ?"
-        val selectionArgs = arrayOf(start.timeInMillis.toString(), end.timeInMillis.toString())
+        val selectionArgs = arrayOf(start.toString(), end.toString())
 
         val cursor = contentResolver.query(
             CalendarContract.Events.CONTENT_URI,
-            projection,
+            arrayOf(CalendarContract.Events.TITLE, CalendarContract.Events.DESCRIPTION),
             selection,
             selectionArgs,
             "${CalendarContract.Events.DTSTART} ASC"
@@ -286,47 +233,34 @@ class MainActivity : AppCompatActivity() {
 
         cursor?.use {
             while (it.moveToNext()) {
-                val title = it.getString(it.getColumnIndex(CalendarContract.Events.TITLE))
-                val description = it.getString(it.getColumnIndex(CalendarContract.Events.DESCRIPTION))
+                val title = it.getString(it.getColumnIndex(CalendarContract.Events.TITLE)) ?: ""
+                val description = it.getString(it.getColumnIndex(CalendarContract.Events.DESCRIPTION)) ?: ""
 
-                // Парсим сумму из описания (предполагаем формат "Категория: 100.0₽")
-                val amount = try {
-                    description?.substringAfterLast(" ")?.replace("₽", "")?.toDoubleOrNull() ?: 0.0
-                } catch (e: Exception) {
-                    0.0
-                }
+                if (!description.contains("Обед") &&
+                    !description.contains("Транспорт") &&
+                    !description.contains("Магазин") &&
+                    !description.contains("Развлечения") &&
+                    !description.contains("Другое")
+                ) continue
 
-                events.add(Event(title ?: "", description ?: "", amount))
+                val amount = Regex("\\d+(?:[.,]\\d+)?")
+                    .findAll(description)
+                    .mapNotNull { it.value.replace(",", ".").toDoubleOrNull() }
+                    .sum()
+
+                events.add(ExpenseEvent(title, description, amount))
             }
         }
 
         return events
     }
 
-    @SuppressLint("Range")
-    private fun getCalendarId(): Long? {
-        val projection = arrayOf(CalendarContract.Calendars._ID)
-        val cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, projection, null, null, null)
-        cursor?.use {
-            if (it.moveToFirst()) {
-                return it.getLong(it.getColumnIndex(CalendarContract.Calendars._ID))
-            }
-        }
-        return null
-    }
-
-    private fun addEventToCalendar(title: String, description: String) {
-        val calendarId = getCalendarId()
-        if (calendarId == null) {
-            Toast.makeText(this, "Не удалось найти календарь", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val endMillis = selectedDateMillis + 60 * 60 * 1000
+    private fun addEventToCalendar(title: String, description: String, amount: Double) {
+        val calendarId = getCalendarId() ?: return showToast("Не удалось найти календарь")
 
         val values = ContentValues().apply {
             put(CalendarContract.Events.DTSTART, selectedDateMillis)
-            put(CalendarContract.Events.DTEND, endMillis)
+            put(CalendarContract.Events.DTEND, selectedDateMillis + 60 * 60 * 1000)
             put(CalendarContract.Events.TITLE, title)
             put(CalendarContract.Events.DESCRIPTION, description)
             put(CalendarContract.Events.CALENDAR_ID, calendarId)
@@ -335,63 +269,87 @@ class MainActivity : AppCompatActivity() {
 
         try {
             contentResolver.insert(CalendarContract.Events.CONTENT_URI, values)
-            Toast.makeText(this, "Событие добавлено!", Toast.LENGTH_SHORT).show()
-            updateFinancialStatus() // Обновляем весь финансовый статус
+            showToast("Событие добавлено!")
+            updateFinancialStatus()
         } catch (e: Exception) {
             Log.e("CalendarError", "Ошибка: ${e.message}", e)
-            Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+            showToast("Ошибка при добавлении события: ${e.message}")
         }
     }
-    private fun deleteEventsForDate(dateMillis: Long) {
-        val start = Calendar.getInstance().apply {
-            timeInMillis = dateMillis
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
+
+    @SuppressLint("Range")
+    private fun getCalendarId(): Long? {
+        val cursor = contentResolver.query(
+            CalendarContract.Calendars.CONTENT_URI,
+            arrayOf(CalendarContract.Calendars._ID),
+            null, null, null
+        )
+        cursor?.use {
+            if (it.moveToFirst()) {
+                return it.getLong(it.getColumnIndex(CalendarContract.Calendars._ID))
+            }
         }
-        val end = Calendar.getInstance().apply {
-            timeInMillis = dateMillis
-            set(Calendar.HOUR_OF_DAY, 23)
-            set(Calendar.MINUTE, 59)
-            set(Calendar.SECOND, 59)
+        return null
+    }
+
+    private fun getCurrentBalance(): Double =
+        sharedPref.getFloat("current_balance", 0f).toDouble()
+
+    private fun saveCurrentBalance(value: Double) {
+        sharedPref.edit().putFloat("current_balance", value.toFloat()).apply()
+    }
+
+    private fun showBalanceScreen() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_balance, null)
+        val edit = dialogView.findViewById<EditText>(R.id.edit_balance)
+        edit.setText(getCurrentBalance().toString())
+
+        AlertDialog.Builder(this)
+            .setTitle("Управление балансом")
+            .setView(dialogView)
+            .setPositiveButton("Сохранить") { _, _ ->
+                val new = edit.text.toString().toDoubleOrNull() ?: 0.0
+                saveCurrentBalance(new)
+                updateFinancialStatus()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun showToast(text: String) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun checkAndRequestPermissions() {
+        val permissionsNeeded = mutableListOf<String>()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR)
+            != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.WRITE_CALENDAR)
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR)
+            != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.READ_CALENDAR)
         }
 
-        val selection = "${CalendarContract.Events.DTSTART} >= ? AND ${CalendarContract.Events.DTSTART} <= ?"
-        val selectionArgs = arrayOf(start.timeInMillis.toString(), end.timeInMillis.toString())
+        if (permissionsNeeded.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissionsNeeded.toTypedArray(),
+                requestcode
+            )
+        }
+    }
 
-        val rowsDeleted = contentResolver.delete(CalendarContract.Events.CONTENT_URI, selection, selectionArgs)
-        Log.d("CalendarDelete", "Удалено событий: $rowsDeleted")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == requestcode && grantResults.any { it != PackageManager.PERMISSION_GRANTED }) {
+            showToast("Нужны разрешения для работы с календарем")
+        }
     }
 }
 
-// Новые классы данных
-data class Subscription(val name: String, val amount: Double)
-data class Event(val title: String, val description: String, val amount: Double)
-
-// Адаптер для RecyclerView
-class SubscriptionsAdapter(
-    private val subscriptions: List<Subscription>,
-    private val onDelete: (Subscription) -> Unit
-) : RecyclerView.Adapter<SubscriptionsAdapter.ViewHolder>() {
-
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val name: TextView = view.findViewById(R.id.subscription_name)
-        val amount: TextView = view.findViewById(R.id.subscription_amount)
-        val delete: ImageButton = view.findViewById(R.id.delete_subscription)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_subscription, parent, false)
-        return ViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val subscription = subscriptions[position]
-        holder.name.text = subscription.name
-        holder.amount.text = "${subscription.amount}₽"
-        holder.delete.setOnClickListener { onDelete(subscription) }
-    }
-
-    override fun getItemCount() = subscriptions.size
-}
+data class ExpenseEvent(val title: String, val description: String, val amount: Double)

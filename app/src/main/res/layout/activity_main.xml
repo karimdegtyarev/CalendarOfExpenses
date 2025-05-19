@@ -10,26 +10,30 @@
         android:id="@+id/calendarView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="92dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/eventsTextView"
-        android:layout_width="414dp"
-        android:layout_height="135dp"
-        android:layout_marginTop="2dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="2dp"
         android:padding="16dp"
         android:text="Выберите дату, чтобы увидеть события"
         app:layout_constraintBottom_toTopOf="@+id/financialStatus"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/calendarView"
-        tools:layout_editor_absoluteX="-3dp" />
+        tools:ignore="HardcodedText" />
 
     <TextView
         android:id="@+id/financialStatus"
-        android:layout_width="410dp"
-        android:layout_height="130dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:layout_marginBottom="2dp"
         android:autoSizeMinTextSize="14dp"
@@ -37,11 +41,12 @@
         android:text="Финансовая информация будет здесь"
         android:textAlignment="viewStart"
         android:textSize="14sp"
-        android:verticalScrollbarPosition="defaultPosition"
         app:layout_constraintBottom_toTopOf="@+id/add_expenses"
-        app:layout_constraintTop_toBottomOf="@+id/eventsTextView"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="1dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/eventsTextView"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/add_expenses"
@@ -51,26 +56,31 @@
         android:text="Добавить событие"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/balanceButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
+        android:layout_marginEnd="16dp"
         android:text="Баланс"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/add_expenses" />
+        app:layout_constraintTop_toBottomOf="@+id/add_expenses"
+        app:layout_constraintVertical_bias="0.0"
+        tools:ignore="HardcodedText" />
 
     <Button
-        android:id="@+id/subscriptionsButton"
+        android:id="@+id/setLimitButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="Подписки"
+        android:text="Установить дневной лимит"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/add_expenses" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.064" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

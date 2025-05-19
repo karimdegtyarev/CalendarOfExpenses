@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -16,7 +17,8 @@
             android:text="Обед"
             android:textStyle="bold"
             android:textSize="18sp"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp"
+            tools:ignore="HardcodedText" />
 
         <RadioGroup
             android:id="@+id/radioGroup"
@@ -27,19 +29,23 @@
                 android:id="@+id/radio_choice1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Выбор 1"/>
+                android:text="400"
+                tools:ignore="HardcodedText" />
 
             <RadioButton
                 android:id="@+id/radio_choice2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Выбор 2"/>
+                android:text="500"
+                tools:ignore="HardcodedText" />
 
             <RadioButton
                 android:id="@+id/radio_choice3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Выбор 3"/>
+                android:text="700"
+                tools:ignore="HardcodedText" />
+
         </RadioGroup>
 
         <LinearLayout
@@ -52,7 +58,8 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="Транспорт:"/>
+                android:text="Транспорт:"
+                tools:ignore="HardcodedText" />
 
             <EditText
                 android:id="@+id/edit_transport"
@@ -72,7 +79,8 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="Магазин:"/>
+                android:text="Магазин:"
+                tools:ignore="HardcodedText" />
 
             <EditText
                 android:id="@+id/edit_shop"
@@ -92,7 +100,8 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="Развлечения:"/>
+                android:text="Развлечения:"
+                tools:ignore="HardcodedText" />
 
             <EditText
                 android:id="@+id/edit_entertainment"
@@ -112,7 +121,8 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="Другое:"/>
+                android:text="Другое:"
+                tools:ignore="HardcodedText" />
 
             <EditText
                 android:id="@+id/edit_other"
