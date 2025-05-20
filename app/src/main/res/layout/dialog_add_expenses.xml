@@ -20,6 +20,7 @@
             android:layout_marginBottom="8dp"
             tools:ignore="HardcodedText" />
 
+
         <RadioGroup
             android:id="@+id/radioGroup"
             android:layout_width="match_parent"
@@ -45,6 +46,18 @@
                 android:layout_height="wrap_content"
                 android:text="700"
                 tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Другая сумма:"
+                android:layout_marginTop="16dp"/>
+            <EditText
+                android:id="@+id/edit_custom_lunch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                tools:ignore="Autofill,LabelFor" />
 
         </RadioGroup>
 
