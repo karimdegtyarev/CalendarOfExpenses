@@ -19,6 +19,7 @@ import androidx.core.content.edit
 import com.applandeo.materialcalendarview.CalendarDay
 import com.applandeo.materialcalendarview.EventDay
 import com.applandeo.materialcalendarview.listeners.OnCalendarDayClickListener
+import com.applandeo.materialcalendarview.utils.calendar
 import com.example.calendar2.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -212,15 +213,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateFinancialStatus() {
+        val calendar = Calendar.getInstance()
         val events = loadEventsForDate(selectedDateMillis)
         val daily = events.sumOf { it.amount }
         val monthTotal = calculateTotalFromMonthStart(selectedDateMillis)
         val balance = getCurrentBalance()
         val remaining = balance - monthTotal
         val dailyLimit = sharedPref.getFloat("limit_total", 1000f).toDouble()
+        val daysRemaining= calendar.getActualMaximum(Calendar.DAY_OF_MONTH) - calendar.get(Calendar.DAY_OF_MONTH)
 
-        binding.financialStatus.text = "Траты за день: %.2f₽\nЛимит: %.2f₽\nОстаток: %.2f₽".format(
-            daily, dailyLimit, remaining
+        var freeMoney = remaining - dailyLimit * daysRemaining
+        if (daily > 0) freeMoney -= dailyLimit
+
+        binding.financialStatus.text = "Траты за день: %.2f₽\nЛимит: %.2f₽\nОстаток: %.2f₽\nСвободные деньги: %.2f₽".format(
+            daily, dailyLimit, remaining,freeMoney
         )
         binding.eventsTextView.text = if (events.isNotEmpty())
             events.joinToString("\n") { it.description }
@@ -232,16 +238,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateFinancialStatusForSelectedDate() {
+        val calendar = Calendar.getInstance()
         val events = cachedEvents[getDayStartMillis(selectedDateMillis)] ?: emptyList()
         val daily = events.sumOf { it.amount }
         val monthTotal = calculateTotalFromMonthStart(selectedDateMillis)
         val balance = getCurrentBalance()
         val remaining = balance - monthTotal
         val dailyLimit = sharedPref.getFloat("limit_total", 1000f).toDouble()
+        val daysRemaining= calendar.getActualMaximum(Calendar.DAY_OF_MONTH) - calendar.get(Calendar.DAY_OF_MONTH)
 
         // Обновляем только UI для выбранной даты
-        binding.financialStatus.text = "Траты за день: %.2f₽\nЛимит: %.2f₽\nОстаток: %.2f₽".format(
-            daily, dailyLimit, remaining
+        var freeMoney = remaining - dailyLimit * daysRemaining
+        if (daily > 0) freeMoney -= dailyLimit
+
+        binding.financialStatus.text = "Траты за день: %.2f₽\nЛимит: %.2f₽\nОстаток: %.2f₽\nСвободные деньги: %.2f₽".format(
+            daily, dailyLimit, remaining,freeMoney
         )
         binding.eventsTextView.text = if (events.isNotEmpty())
             events.joinToString("\n") { it.description }
