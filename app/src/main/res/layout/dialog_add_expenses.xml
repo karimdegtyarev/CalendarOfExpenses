@@ -28,21 +28,21 @@
 
             <RadioButton
                 android:id="@+id/radio_choice1"
-                android:layout_width="wrap_content"
+                android:layout_width="122dp"
                 android:layout_height="wrap_content"
                 android:text="400"
                 tools:ignore="HardcodedText" />
 
             <RadioButton
                 android:id="@+id/radio_choice2"
-                android:layout_width="wrap_content"
+                android:layout_width="121dp"
                 android:layout_height="wrap_content"
                 android:text="500"
                 tools:ignore="HardcodedText" />
 
             <RadioButton
                 android:id="@+id/radio_choice3"
-                android:layout_width="wrap_content"
+                android:layout_width="121dp"
                 android:layout_height="wrap_content"
                 android:text="700"
                 tools:ignore="HardcodedText" />
@@ -121,6 +121,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="2"
                 android:layout_height="wrap_content"
+                android:autofillHints=""
                 android:inputType="text"/>
         </LinearLayout>
 
@@ -142,7 +143,8 @@
                 android:layout_width="0dp"
                 android:layout_weight="2"
                 android:layout_height="wrap_content"
-                android:inputType="text"/>
+                android:inputType="text"
+                />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="over_limit_red">#FF5252</color>
+    <color name="your_color_here">#3F51B5</color>
+    <color name="blue">#3F51B5</color>
+    <color name="header">#673AB7</color>
+    <color name="anotherMonthsDaysLabelsColor">#77000000</color>
+    <color name="fully_green">#4CAF50</color>
+    <color name="light_green">#8BC34A</color>
+    <color name="yellow">#FFEB3B</color>
+    <color name="orange">#FF9800</color>
+    <color name="red">#F44336</color>
+    <color name="dark_red">#D32F2F</color>
+
 </resources>

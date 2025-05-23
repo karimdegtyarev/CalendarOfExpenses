@@ -7,28 +7,28 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Лимиты на обеды"
+        android:text="@string/lunch_limits"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
     <EditText
         android:id="@+id/limit_min"
-        android:hint="Минимальный"
-        android:inputType="numberDecimal"
+        android:hint="@string/min_limit"
+        android:inputType="numberDecimal|numberSigned"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <EditText
         android:id="@+id/limit_avg"
-        android:hint="Средний"
-        android:inputType="numberDecimal"
+        android:hint="@string/avg_limit"
+        android:inputType="numberDecimal|numberSigned"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <EditText
         android:id="@+id/limit_max"
-        android:hint="Максимальный"
-        android:inputType="numberDecimal"
+        android:hint="@string/max_limit"
+        android:inputType="numberDecimal|numberSigned"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"/>
@@ -36,15 +36,14 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Общий дневной лимит"
+        android:text="@string/daily_limit"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
     <EditText
         android:id="@+id/limit_total"
-        android:hint="Общий лимит"
-        android:inputType="numberDecimal"
+        android:hint="@string/total_limit"
+        android:inputType="numberDecimal|numberSigned"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
-
 </LinearLayout>

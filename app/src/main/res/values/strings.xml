@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">Calendar2</string>
+    <string name="lunch_limits">Лимиты на обеды</string>
+    <string name="min_limit">Минимальный</string>
+    <string name="avg_limit">Средний</string>
+    <string name="max_limit">Максимальный</string>
+    <string name="daily_limit">Общий дневной лимит</string>
+    <string name="total_limit">Общий лимит</string>
+    <string name="current_balance">Текущий баланс:</string>
+    <string name="enter_amount">Введите сумму</string>
+    <string name="lunch">Обед</string>
+    <string name="option_400">400</string>
+    <string name="option_500">500</string>
+    <string name="option_700">700</string>
+    <string name="other_amount">Другая сумма:</string>
+    <string name="transport">Транспорт:</string>
 </resources>
