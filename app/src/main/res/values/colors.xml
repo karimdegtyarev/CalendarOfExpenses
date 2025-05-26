@@ -11,5 +11,9 @@
     <color name="orange">#FF9800</color>
     <color name="red">#F44336</color>
     <color name="dark_red">#D32F2F</color>
+    <color name="dark_burgundy">#4B0000</color>
+    <color name="black">#000000</color>
+    <!-- Пример темно-бордового -->
+
 
 </resources>

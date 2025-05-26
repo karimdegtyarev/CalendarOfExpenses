@@ -1,94 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.applandeo.materialcalendarview.CalendarView
-        android:id="@+id/calendarView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        app:headerColor="@color/header"
-        app:todayLabelColor="@color/your_color_here"
-        app:anotherMonthsDaysLabelsColor="@color/anotherMonthsDaysLabelsColor"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/setLimitButton" />
+    <!-- Верхние красные кнопки -->
 
-<!--    app:headerColor="@color/your_header_color"-->
-<!--    app:previousButtonSrc="@drawable/ic_chevron_left"-->
-<!--    app:forwardButtonSrc="@drawable/ic_chevron_right"-->
-<!--    app:selectionColor="@color/your_selection_color"-->
-<!--    app:todayLabelColor="@color/your_today_color"-->
-<!--    app:daysLabelsColor="@color/your_days_labels_color"-->
-<!--    app:anotherMonthsDaysLabelsColor="@color/your_other_month_color"-->
-<!--    app:disabledDaysLabelsColor="@color/your_disabled_days_color"-->
-
-
-    <TextView
-        android:id="@+id/eventsTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:padding="16dp"
-        android:text="Событий на выбранную дату нет."
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/calendarView" />
-
-    <TextView
-        android:id="@+id/financialStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="50dp"
-        android:background="@drawable/bg_financial_status"
-        android:padding="16dp"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toTopOf="@+id/add_expenses"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/eventsTextView"
-        app:layout_constraintVertical_bias="0.0" />
-
+    <!-- Метка под кнопками -->
     <Button
-        android:id="@+id/add_expenses"
+        android:id="@+id/setLimitButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:text="Добавить событие"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/eventsTextView"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.918" />
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@android:color/holo_red_light"
+        android:textColor="@color/black"
+        android:text="Установить \n дневной лимит"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/balanceButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="20dp"
-        android:text="Баланс"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/eventsTextView"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.918" />
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@android:color/holo_red_light"
+        android:textColor="@color/black"
+        android:text="Доход и \n ежемес.расход"
+        app:layout_constraintEnd_toEndOf="@+id/calendarView"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/setLimitButton"
+    <TextView
+        android:id="@+id/incomeAndMonthlyLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="5dp"
         android:layout_marginTop="5dp"
-        android:backgroundTint="@android:color/holo_red_light"
-        android:text="Установить дневной лимит"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/setLimitButton" />
+
+    <!-- Календарь -->
+
+    <!-- События -->
+
+    <com.applandeo.materialcalendarview.CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_marginTop="4dp"
+        app:anotherMonthsDaysLabelsColor="@color/anotherMonthsDaysLabelsColor"
+        app:headerColor="@color/header"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/setLimitButton"
+        app:todayLabelColor="@color/your_color_here" />
+
+    <TextView
+        android:id="@+id/eventsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:scrollbarDefaultDelayBeforeFade="50"
+        android:text="Событий на выбранную дату нет."
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/calendarView" />
+
+    <!-- Финансовый статус -->
+
+    <!-- Нижние кнопки -->
+
+    <TextView
+        android:id="@+id/financialStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_financial_status"
+        android:padding="16dp"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/eventsTextView" />
+
+    <Button
+        android:id="@+id/add_expenses"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="35dp"
+        android:textColor="@color/black"
+        android:text="Добавить \n трату"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/addIncomeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="35dp"
+        android:textColor="@color/black"
+        android:text="Добавить \n доход"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/resetDataButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="35dp"
+        android:textColor="@color/black"
+        android:text="Сброс \n данных"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="MissingConstraints" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
