@@ -521,12 +521,14 @@ class MainActivity : AppCompatActivity() {
         val defaultMin = sharedPref.getFloat("limit_min", 400f) // Сохраняем текущие лимиты
         val defaultAvg = sharedPref.getFloat("limit_avg", 500f)
         val defaultMax = sharedPref.getFloat("limit_max", 700f)
+        val beginingLimit = sharedPref.getFloat("limit_total", 0f)
 
         sharedPref.edit().apply {
             clear()
             putFloat("limit_min", defaultMin) // Восстанавливаем дефолтные лимиты
             putFloat("limit_avg", defaultAvg)
             putFloat("limit_max", defaultMax)
+            putFloat("limit_total",beginingLimit)
             putBoolean("calendar_cleared", false) // Сбрасываем флаг очистки
             apply()
         }
